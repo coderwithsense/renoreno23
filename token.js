@@ -1,16 +1,54 @@
 import connection from './connection.js';
-import {PublicKey, Keypair} from '@solana/web3.js';
-import { createMint } from '@solana/spl-token';
-import * as bs58 from "bs58";
+import { PublicKey, Keypair, Transaction } from '@solana/web3.js';
+import { createMint, getMint, mintTo, tokenMetadataInitialize } from '@solana/spl-token';
+import base58 from 'bs58';
 
-console.log(bs58);
+const keypair = Keypair.fromSecretKey(
+    base58.decode(process.env.private_key)
+);
 
-async function mintToken() {
-    const keypair = Keypair.fromSecretKey(
-        bs58.decode(process.env.private_key)
-    );
-    console.log(keypair.publicKey.toString());
-}
+const mint = await createMint(
+    connection,
+    keypair,
+    keypair.publicKey,
+    keypair.publicKey,
+    9
+);
 
-const token = await mintToken();
-console.log(token);
+const infoPehele = await getMint(
+    connection,
+    mint
+)
+
+const mintPublicKey = new PublicKey(mint);
+const keypairPublicKey = new PublicKey(keypair.publicKey);
+
+console.log(`Mint address: ${mint.address}`);
+
+// await mintTo(
+//     connection,
+//     keypair,
+//     mint.address,
+//     keypairPublicKey,
+//     keypairPublicKey,
+//     100000000000
+// )
+
+await tokenMetadataInitialize(
+    connection,
+    keypair,
+    mint,
+    keypair.publicKey,
+    keypair,
+    "Token BLAH",
+    "BLAH",
+    "BLAH"
+)
+
+const info = await getMint(
+    connection,
+    mint
+)
+
+console.log(mint);
+console.log(info);
